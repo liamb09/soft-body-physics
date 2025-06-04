@@ -11,12 +11,12 @@ std::vector<Point>& Shape::getPoints () {
 }
 
 void Shape::update (const float &dt, const float xForce, const float yForce, const float gravity) {
-    if (fixed) return;
+    outermostPoints = {100000, -100000, -100000, 100000};
     for (Point &point : points) {
-        point.update(dt, xForce, yForce, gravity);
-        outermostPoints[0] = std::max(outermostPoints[0], point.y);
+        if (!fixed) point.update(dt, xForce, yForce, gravity);
+        outermostPoints[0] = std::min(outermostPoints[0], point.y);
         outermostPoints[1] = std::max(outermostPoints[1], point.x);
-        outermostPoints[2] = std::min(outermostPoints[2], point.y);
+        outermostPoints[2] = std::max(outermostPoints[2], point.y);
         outermostPoints[3] = std::min(outermostPoints[3], point.x);
     }
 }
@@ -26,9 +26,21 @@ void Shape::render (SDL_Renderer* &renderer) {
         points[i].render(renderer);
         SDL_RenderLine(renderer, points[i].x, points[i].y, points[(i+1)%points.size()].x, points[(i+1)%points.size()].y);
     }
+    std::cout << outermostPoints[3] << "  " << outermostPoints[0] << "  " << outermostPoints[1] << "  " << outermostPoints[2] << "\n";
+    SDL_RenderLine(renderer, outermostPoints[3], outermostPoints[0], outermostPoints[1], outermostPoints[2]);
 }
 void Shape::handleCollisions(Shape &otherShape) {
-    // This function checks which of the points from another shape is in this shape.
+    // If the other shape's container (the smallest rectangle that fits around it) is
+    //   outside of this shape's, then skip all the extra steps
+    // Checks if the shapes do intersect first and flips the bool
+    if (!(
+        (outermostPoints[3] < otherShape.outermostPoints[3] && otherShape.outermostPoints[3] < outermostPoints[1] &&
+            outermostPoints[0] < otherShape.outermostPoints[0] && otherShape.outermostPoints[0] < outermostPoints[2]) || // otherShape's topright point is in this shape
+        (outermostPoints[3] < otherShape.outermostPoints[1] && otherShape.outermostPoints[1] < outermostPoints[1] &&
+            outermostPoints[0] < otherShape.outermostPoints[2] && otherShape.outermostPoints[2] < outermostPoints[2]) // otherShape's bottomleft point is in this shape
+    )) return;
+
+    // Checks which of the points from another shape is in this shape.
     // To do so, for each point in the other shape, it calculates how many times the
     //   line going right intersects with the border of the shape.
     // If this number of intersections is odd, the other point is in this shape.

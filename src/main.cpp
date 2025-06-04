@@ -96,10 +96,10 @@ int main(int argc, char* argv[]) {
     SoftBodyPhysics2D engine(.001);
     // square
     engine.addShape(std::vector<Point>{
+        Point(150, 50, 5),
+        Point(350, 50, 5),
+        Point(350, 150, 10),
         Point(150, 150, 5),
-        Point(350, 150, 5),
-        Point(350, 250, 10),
-        Point(150, 250, 5),
     });
     // square2
     engine.addShape(std::vector<Point>{
@@ -107,7 +107,7 @@ int main(int argc, char* argv[]) {
         Point(625, 150, 15),
         Point(625, 250, 15),
         Point(425, 250, 15),
-    });
+    }, true);
     // triangle
     engine.addShape(std::vector<Point>{
         Point(400, 200, 5),

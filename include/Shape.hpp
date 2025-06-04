@@ -7,7 +7,6 @@
 struct Shape {
 
     std::vector<Point> points;
-    std::vector<float> outermostPoints = {100000, 100000, -100000, -100000}; // top right bottom left
     bool fixed;
 
     // declaring vars for collision handling so memory is allocated each time
@@ -15,6 +14,8 @@ struct Shape {
     bool pointIsAboveSide;
 
 public:
+
+    std::vector<float> outermostPoints; // top right bottom left
 
     Shape ();
     Shape (std::vector<Point> points, const bool &fixed = false);
