@@ -14,11 +14,13 @@ public:
     SoftBodyPhysics2D ();
     SoftBodyPhysics2D (const float &GRAVITY);
 
-    void update (const float &dt);
+    std::vector<Shape>& getShapes ();
 
+    void update (const float &dt);
+    void handleCollisions();
     void render (SDL_Renderer* &renderer);
 
     void addShape (Shape &shape);
-    void addShape (std::vector<Point> points);
+    void addShape (std::vector<Point> points, const bool &fixed = false);
 
 };

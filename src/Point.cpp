@@ -6,9 +6,9 @@
 Point::Point (float x, float y, const float &m) : x(x), y(y), vx(0), vy(0), m(m) {}
 Point::Point (float x, float y, float vx, float vy, const float &m) : x(x), y(y), vx(vx), vy(vy), m(m) {}
 
-void Point::update (const float &dt, const float xForce, const float yForce) {
-    vx += xForce*m*dt;
-    vy += yForce*m*dt;
+void Point::update (const float &dt, const float xForce, const float yForce, const float gravity) {
+    vx += xForce/m*dt;
+    vy += yForce/m*dt - gravity;
     x += vx;
     y -= vy;
 }

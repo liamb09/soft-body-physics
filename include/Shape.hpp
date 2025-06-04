@@ -7,17 +7,23 @@
 struct Shape {
 
     std::vector<Point> points;
+    std::vector<float> outermostPoints = {100000, 100000, -100000, -100000}; // top right bottom left
+    bool fixed;
+
+    // declaring vars for collision handling so memory is allocated each time
+    float slope, xInterception, yInterception, centerX, centerY, dPointCenter, dIntPoint, dPointL1, dPointL2, dIntL1, dIntL2, thetaXL2, thetaPL1, thetaPL2, startLineLength, anchorX, anchorY, dAnchorL1, dAnchorL2, dAnchorInt, thetaAnchorL1, thetaAnchorL2, thetaNS;
+    bool pointIsAboveSide;
 
 public:
 
     Shape ();
-    Shape (std::vector<Point> points);
+    Shape (std::vector<Point> points, const bool &fixed = false);
 
     std::vector<Point>& getPoints ();
 
-    void update (const float &dt, const float xForce, const float yForce);
+    void update (const float &dt, const float xForce, const float yForce, const float gravity);
     void render (SDL_Renderer* &renderer);
 
-    bool pointInShape(const Point &p);
-
+    void handleCollisions (Shape &otherShape);
+    float pointToLineDistance (Point &lp1, Point &lp2, Point &point, const bool &movePoint = false);
 };
