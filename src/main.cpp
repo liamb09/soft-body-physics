@@ -101,16 +101,16 @@ int main(int argc, char* argv[]) {
         Point(350, 150, 10),
         Point(150, 150, 5),
     });
-    // square2
-    engine.addShape(std::vector<Point>{
-        Point(425, 150, 15),
-        Point(625, 150, 15),
-        Point(625, 250, 15),
-        Point(425, 250, 15),
-    }, true);
+    // // square2
+    // engine.addShape(std::vector<Point>{
+    //     Point(425, 150, 15),
+    //     Point(625, 150, 15),
+    //     Point(625, 250, 15),
+    //     Point(425, 250, 15),
+    // }, true);
     // triangle
     engine.addShape(std::vector<Point>{
-        Point(400, 200, 5),
+        Point(250, 300, 5),
         Point(400, 400, 5),
         Point(100, 400, 5),
     }, true);

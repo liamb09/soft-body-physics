@@ -4,7 +4,13 @@
 #include "../include/Shape.hpp"
 
 Shape::Shape () : points({}) {}
-Shape::Shape (std::vector<Point> points, const bool &fixed) : points(std::move(points)), fixed(fixed) {}
+Shape::Shape (std::vector<Point> points, const bool &fixed) : points(std::move(points)), fixed(fixed) {
+    if (fixed) {
+        for (Point &p : this->points) {
+            p.fixed = true;
+        }
+    }
+}
 
 std::vector<Point>& Shape::getPoints () {
     return points;
@@ -26,7 +32,7 @@ void Shape::render (SDL_Renderer* &renderer) {
         points[i].render(renderer);
         SDL_RenderLine(renderer, points[i].x, points[i].y, points[(i+1)%points.size()].x, points[(i+1)%points.size()].y);
     }
-    std::cout << outermostPoints[3] << "  " << outermostPoints[0] << "  " << outermostPoints[1] << "  " << outermostPoints[2] << "\n";
+    // test renders diagonal of container
     SDL_RenderLine(renderer, outermostPoints[3], outermostPoints[0], outermostPoints[1], outermostPoints[2]);
 }
 void Shape::handleCollisions(Shape &otherShape) {
@@ -37,7 +43,11 @@ void Shape::handleCollisions(Shape &otherShape) {
         (outermostPoints[3] < otherShape.outermostPoints[3] && otherShape.outermostPoints[3] < outermostPoints[1] &&
             outermostPoints[0] < otherShape.outermostPoints[0] && otherShape.outermostPoints[0] < outermostPoints[2]) || // otherShape's topright point is in this shape
         (outermostPoints[3] < otherShape.outermostPoints[1] && otherShape.outermostPoints[1] < outermostPoints[1] &&
-            outermostPoints[0] < otherShape.outermostPoints[2] && otherShape.outermostPoints[2] < outermostPoints[2]) // otherShape's bottomleft point is in this shape
+            outermostPoints[0] < otherShape.outermostPoints[2] && otherShape.outermostPoints[2] < outermostPoints[2]) || // otherShape's bottomleft point is in this shape
+        (otherShape.outermostPoints[3] < outermostPoints[3] && outermostPoints[3] < otherShape.outermostPoints[1] &&
+            otherShape.outermostPoints[0] < outermostPoints[0] && outermostPoints[0] < otherShape.outermostPoints[2]) || // this shape's topright point is in otherShape
+        (otherShape.outermostPoints[3] < outermostPoints[1] && outermostPoints[1] < otherShape.outermostPoints[1] &&
+            otherShape.outermostPoints[0] < outermostPoints[2] && outermostPoints[2] < otherShape.outermostPoints[2]) // this shape's bottomleft point is in othershape 
     )) return;
 
     // Checks which of the points from another shape is in this shape.
@@ -45,28 +55,26 @@ void Shape::handleCollisions(Shape &otherShape) {
     //   line going right intersects with the border of the shape.
     // If this number of intersections is odd, the other point is in this shape.
     std::vector<Point> &otherPoints = otherShape.getPoints();
-    std::vector<bool> results;
     int numIntersects;
     float currentDist;
     float closestSideDist = 100000;
     int closestSideNum = 0;
     for (Point &otherPoint : otherPoints) {
+        // std::cout << otherPoint.x << "  " << otherPoint.y << "\n";
         // Test if otherPoint is in this shape
         numIntersects = 0;
         for (int i = 0; i < points.size(); i++) {
             // Calculate where current side segment would intersect with horizontal line
-            float intersectX = points[i].x + (otherPoint.y - points[i].y) * (points[(i+1)%points.size()].x - points[i].x)/(points[(i+1)%points.size()].y - points[i].y);
+            intersectX = points[i].x + (otherPoint.y - points[i].y) * (points[(i+1)%points.size()].x - points[i].x)/(points[(i+1)%points.size()].y - points[i].y);
             // Test whether this intersection is within the domain of the horizontal line
             if (otherPoint.x < intersectX && intersectX < outermostPoints[1] + 10 && !((points[(i+1)%points.size()].y > otherPoint.y && points[i].y > otherPoint.y) || (points[(i+1)%points.size()].y < otherPoint.y && points[i].y < otherPoint.y))) {
                 numIntersects++;
             }
         }
-        if (numIntersects % 2 == 1) {
-            results.push_back(true);
-        } else {
-            results.push_back(false);
+        if (numIntersects % 2 == 0) {
             continue;
         }
+        // std::cout << otherPoint.x << "  " << otherPoint.y << "\n";
 
         // Find closest side of this shape to otherPoint if otherPoint is in this shape
         for (int i = 0; i < points.size(); i++) {
@@ -81,10 +89,11 @@ void Shape::handleCollisions(Shape &otherShape) {
     }
 }
 float Shape::pointToLineDistance (Point &lp1, Point &lp2, Point &point, const bool &movePoint) { // lp = line point
+    // change l1 to leftmost point and l2 to rightmost because that's how I did the math
     Point &l1 = lp1.x < lp2.x ? lp1 : lp2;
     Point &l2 = lp1.x < lp2.x ? lp2 : lp1;
 
-    // TODO: update velocities after collision, make points snap to edge without moving edge if edge is fixed
+    // TODO: Update point velocities after handling collision
 
     // Calculates the intersect of the given line and the line with the slope perpendicular to the given line going through the given point.
     // Then, calculates the distance between that intersection and the given point.
@@ -93,7 +102,31 @@ float Shape::pointToLineDistance (Point &lp1, Point &lp2, Point &point, const bo
     yInterception = l1.y + slope*(xInterception - l1.x);
     if (!movePoint) return sqrt(pow(xInterception - point.x, 2) + pow(yInterception - point.y, 2));
 
-    // Move point to side edge
+    // Move point to side edge (if both shapes are fixed, they shouldn't be intersecting--it's an error when they were entered into the engine)
+
+    // If only the side is fixed, just move point to the side
+    if (l1.fixed && l2.fixed && !point.fixed) {
+        point.x = xInterception;
+        point.y = yInterception;
+        return -1;
+    }
+
+    // If only the point is fixed, move the side to the edge of the point
+    if (!l1.fixed && !l2.fixed && point.fixed) {
+        lineVelocityX = (l1.vx + l2.vx)/2;
+        lineVelocityY = (l1.vy + l2.vy)/2;
+        l1.x -= lineVelocityX;
+        l2.x -= lineVelocityX;
+        l1.y -= lineVelocityY;
+        l2.y -= lineVelocityY;
+        l1.vx = 0;
+        l1.vy = 0;
+        l2.vx = 0;
+        l2.vy = 0;
+        return -1;
+    }
+
+    // If both the side and the points are fixed, do the math to move them, taking into account their mass
     const bool pointIsAboveSide = l1.y + slope*(point.x - l1.x) < point.y;
 
     centerX = (l1.m*l1.x + l2.m*l2.x + point.m*point.x)/(l1.m + l2.m + point.m);

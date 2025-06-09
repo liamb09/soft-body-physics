@@ -10,7 +10,7 @@ struct Shape {
     bool fixed;
 
     // declaring vars for collision handling so memory is allocated each time
-    float slope, xInterception, yInterception, centerX, centerY, dPointCenter, dIntPoint, dPointL1, dPointL2, dIntL1, dIntL2, thetaXL2, thetaPL1, thetaPL2, startLineLength, anchorX, anchorY, dAnchorL1, dAnchorL2, dAnchorInt, thetaAnchorL1, thetaAnchorL2, thetaNS;
+    float slope, xInterception, yInterception, centerX, centerY, dPointCenter, dIntPoint, dPointL1, dPointL2, dIntL1, dIntL2, thetaXL2, thetaPL1, thetaPL2, startLineLength, anchorX, anchorY, dAnchorL1, dAnchorL2, dAnchorInt, thetaAnchorL1, thetaAnchorL2, thetaNS, lineVelocityX, lineVelocityY, intersectX;
     bool pointIsAboveSide;
 
 public:

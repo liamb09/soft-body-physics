@@ -6,9 +6,10 @@ struct Point {
 
     float x, y, vx, vy;
     float m;
+    bool fixed;
 
-    Point (float x, float y, const float &m);
-    Point (float x, float y, float vx, float vy, const float &m);
+    Point (float x, float y, const float &m, const bool fixed = false);
+    Point (float x, float y, float vx, float vy, const float &m, const bool fixed = false);
 
     void update (const float &dt, const float xForce, const float yForce, const float gravity);
     void render (SDL_Renderer* &renderer, const int &divisions = 15);
