@@ -8,11 +8,13 @@ class SoftBodyPhysics2D {
 
     std::vector<Shape> shapes;
     float GRAVITY;
+    float ELASTICITY; // 1 = perfectly elastic
 
 public:
 
     SoftBodyPhysics2D ();
     SoftBodyPhysics2D (const float &GRAVITY);
+    SoftBodyPhysics2D (const float &GRAVITY, const float &ELASTICITY);
 
     std::vector<Shape>& getShapes ();
 

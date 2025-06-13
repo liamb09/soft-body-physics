@@ -93,7 +93,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Initialize simulation
-    SoftBodyPhysics2D engine(.001);
+    SoftBodyPhysics2D engine(.001, 1);
     // square
     engine.addShape(std::vector<Point>{
         Point(150, 50, 5),

@@ -108,25 +108,41 @@ float Shape::pointToLineDistance (Point &lp1, Point &lp2, Point &point, const bo
     if (l1.fixed && l2.fixed && !point.fixed) {
         point.x = xInterception;
         point.y = yInterception;
+        // collision normal, represented by the vector between l1 and l2 that has been rotated 90 degrees
+        float cnx = -(l2.y - l1.y);
+        float cny = (l2.x - l1.x);
+        float thetaNormV = atan2(point.vy, point.vx) - atan2(cny, cnx); // angle between normal vector and velocity vector
+        float newVx = -(point.vx*cos(M_PI-2*thetaNormV) - point.vy*sin(M_PI-2*thetaNormV));
+        float newVy = point.vx*sin(M_PI-2*thetaNormV) + point.vy*cos(M_PI-2*thetaNormV);
+        point.vx = newVx;
+        point.vy = newVy;
         return -1;
     }
 
     // If only the point is fixed, move the side to the edge of the point
+    lineVelocityX = (l1.vx + l2.vx)/2;
+    lineVelocityY = (l1.vy + l2.vy)/2;
     if (!l1.fixed && !l2.fixed && point.fixed) {
-        lineVelocityX = (l1.vx + l2.vx)/2;
-        lineVelocityY = (l1.vy + l2.vy)/2;
         l1.x -= lineVelocityX;
         l2.x -= lineVelocityX;
         l1.y -= lineVelocityY;
         l2.y -= lineVelocityY;
-        l1.vx = 0;
-        l1.vy = 0;
-        l2.vx = 0;
-        l2.vy = 0;
+        // collision normal, represented by the vector between l1 and l2 that has been rotated 90 degrees
+        float cnx = -(l2.y - l1.y);
+        float cny = (l2.x - l1.x);
+        float thetaNormV = atan2(lineVelocityY, lineVelocityX) - atan2(cny, cnx); // angle between normal vector and velocity vector
+        float newVx = -(lineVelocityX*cos(M_PI-2*thetaNormV) - lineVelocityY*sin(M_PI-2*thetaNormV));
+        float newVy = (lineVelocityX*sin(M_PI-2*thetaNormV) + lineVelocityY*cos(M_PI-2*thetaNormV));
+        l1.vx = newVx;
+        l1.vy = newVy;
+        l2.vx = newVx;
+        l2.vy = newVy;
+        l1.update(1, 0, 0, 0);
+        l2.update(1, 0, 0, 0);
         return -1;
     }
 
-    // If both the side and the points are fixed, do the math to move them, taking into account their mass
+    // If neither the side nor the points are fixed, do the math to move them, taking into account their mass
     const bool pointIsAboveSide = l1.y + slope*(point.x - l1.x) < point.y;
 
     centerX = (l1.m*l1.x + l2.m*l2.x + point.m*point.x)/(l1.m + l2.m + point.m);

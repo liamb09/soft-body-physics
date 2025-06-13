@@ -3,8 +3,9 @@
 #include <SDL3/SDL.h>
 #include "../include/SoftBodyPhysics2D.hpp"
 
-SoftBodyPhysics2D::SoftBodyPhysics2D () : GRAVITY(1), shapes({}) {}
-SoftBodyPhysics2D::SoftBodyPhysics2D (const float &GRAVITY) : shapes({}), GRAVITY(GRAVITY) {}
+SoftBodyPhysics2D::SoftBodyPhysics2D () : shapes({}), GRAVITY(1), ELASTICITY(1) {}
+SoftBodyPhysics2D::SoftBodyPhysics2D (const float &GRAVITY) : shapes({}), GRAVITY(GRAVITY), ELASTICITY(1) {}
+SoftBodyPhysics2D::SoftBodyPhysics2D (const float &GRAVITY, const float &ELASTICITY) : shapes({}), GRAVITY(GRAVITY), ELASTICITY(ELASTICITY) {}
 
 std::vector<Shape>& SoftBodyPhysics2D::getShapes () {
     return shapes;
