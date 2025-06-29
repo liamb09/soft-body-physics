@@ -2,6 +2,8 @@
 #include <iostream>
 #include <vector>
 #include <SDL3/SDL.h>
+#include "Point.hpp"
+#include "Spring.hpp"
 #include "Shape.hpp"
 
 class SoftBodyPhysics2D {
@@ -24,5 +26,8 @@ public:
 
     void addShape (Shape &shape);
     void addShape (std::vector<Point> points, const bool &fixed = false);
+
+    // adds a rectangle with its top left corner at (x,y)
+    void addRect (const float &x, const float &y, const float &width, const float &height, const float &m = 5, const bool &fixed = false);
 
 };

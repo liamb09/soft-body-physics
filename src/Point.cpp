@@ -7,11 +7,13 @@ Point::Point (float x, float y, const float &m, const bool fixed) : x(x), y(y), 
 Point::Point (float x, float y, float vx, float vy, const float &m, const bool fixed) : x(x), y(y), vx(vx), vy(vy), m(m), fixed(fixed) {}
 
 void Point::update (const float &dt, const float xForce, const float yForce, const float gravity) {
+    // std::cout << y << "\n";
+    // "F = ma" therefore "a = F/m"
     if (fixed) return;
     vx += xForce/m*dt;
     vy += yForce/m*dt - gravity*dt;
-    x += vx;
-    y -= vy;
+    x += vx*dt;
+    y += vy*dt;
 }
 
 void Point::render (SDL_Renderer* &renderer, const int &divisions) {

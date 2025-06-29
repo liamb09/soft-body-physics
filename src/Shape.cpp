@@ -1,10 +1,17 @@
 #include <iostream>
 #include <cmath>
 #include <SDL3/SDL.h>
+#include "../include/Spring.hpp"
 #include "../include/Shape.hpp"
 
-Shape::Shape () : points({}) {}
 Shape::Shape (std::vector<Point> points, const bool &fixed) : points(std::move(points)), fixed(fixed) {
+    if (!fixed && this->springs.empty()) {
+        for (int i = 0; i < this->points.size()-1; i++) {
+            for (int j = i+1; j < this->points.size(); j++) {
+                this->springs.emplace_back(&(this->points[i]), &(this->points[j]), 750, 30);
+            }
+        }
+    }
     if (fixed) {
         for (Point &p : this->points) {
             p.fixed = true;
@@ -17,6 +24,9 @@ std::vector<Point>& Shape::getPoints () {
 }
 
 void Shape::update (const float &dt, const float xForce, const float yForce, const float gravity) {
+    for (Spring &spring : springs) {
+        spring.update(dt);
+    }
     outermostPoints = {100000, -100000, -100000, 100000};
     for (Point &point : points) {
         if (!fixed) point.update(dt, xForce, yForce, gravity);
@@ -28,14 +38,19 @@ void Shape::update (const float &dt, const float xForce, const float yForce, con
 }
 
 void Shape::render (SDL_Renderer* &renderer) {
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    for (Spring &spring : springs) {
+        spring.render(renderer);
+    }
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     for (int i = 0; i < points.size(); i++) {
         points[i].render(renderer);
         SDL_RenderLine(renderer, points[i].x, points[i].y, points[(i+1)%points.size()].x, points[(i+1)%points.size()].y);
     }
     // test renders diagonal of container
-    SDL_RenderLine(renderer, outermostPoints[3], outermostPoints[0], outermostPoints[1], outermostPoints[2]);
+    // SDL_RenderLine(renderer, outermostPoints[3], outermostPoints[0], outermostPoints[1], outermostPoints[2]);
 }
-void Shape::handleCollisions(Shape &otherShape) {
+void Shape::handleCollisions(Shape &otherShape, const float &ELASTICITY) {
     // If the other shape's container (the smallest rectangle that fits around it) is
     //   outside of this shape's, then skip all the extra steps
     // Checks if the shapes do intersect first and flips the bool
@@ -78,22 +93,20 @@ void Shape::handleCollisions(Shape &otherShape) {
 
         // Find closest side of this shape to otherPoint if otherPoint is in this shape
         for (int i = 0; i < points.size(); i++) {
-            currentDist = pointToLineDistance(points[i], points[(i+1)%points.size()], otherPoint);
+            currentDist = pointToLineDistance(points[i], points[(i+1)%points.size()], otherPoint, ELASTICITY);
             if (currentDist < closestSideDist) {
                 closestSideDist = currentDist;
                 closestSideNum = i;
             }
         }
         // std::cout << "The closest side to (" << otherPoint.x << ", " << otherPoint.y << ") is side #" << closestSideNum << " from (" << points[closestSideNum].x << ", " << points[closestSideNum].y << ") to (" << points[(closestSideNum+1)%points.size()].x << ", " << points[(closestSideNum+1)%points.size()].y << ")\n";
-        pointToLineDistance(points[closestSideNum], points[(closestSideNum+1)%points.size()], otherPoint, true);
+        pointToLineDistance(points[closestSideNum], points[(closestSideNum+1)%points.size()], otherPoint, ELASTICITY, true);
     }
 }
-float Shape::pointToLineDistance (Point &lp1, Point &lp2, Point &point, const bool &movePoint) { // lp = line point
+float Shape::pointToLineDistance (Point &lp1, Point &lp2, Point &point, const float &ELASTICITY, const bool &movePoint) { // lp = line point
     // change l1 to leftmost point and l2 to rightmost because that's how I did the math
     Point &l1 = lp1.x < lp2.x ? lp1 : lp2;
     Point &l2 = lp1.x < lp2.x ? lp2 : lp1;
-
-    // TODO: Update point velocities after handling collision
 
     // Calculates the intersect of the given line and the line with the slope perpendicular to the given line going through the given point.
     // Then, calculates the distance between that intersection and the given point.
@@ -102,18 +115,28 @@ float Shape::pointToLineDistance (Point &lp1, Point &lp2, Point &point, const bo
     yInterception = l1.y + slope*(xInterception - l1.x);
     if (!movePoint) return sqrt(pow(xInterception - point.x, 2) + pow(yInterception - point.y, 2));
 
-    // Move point to side edge (if both shapes are fixed, they shouldn't be intersecting--it's an error when they were entered into the engine)
+    // If both are fixed (ex: wall touches ground) then exit
+    if (l1.fixed && l2.fixed && point.fixed) return -1;
 
     // If only the side is fixed, just move point to the side
     if (l1.fixed && l2.fixed && !point.fixed) {
         point.x = xInterception;
         point.y = yInterception;
-        // collision normal, represented by the vector between l1 and l2 that has been rotated 90 degrees
+
+        // collision normal, represented by the vector between l1 and l2 that has been rotated 90 degrees (normalized)
         float cnx = -(l2.y - l1.y);
         float cny = (l2.x - l1.x);
-        float thetaNormV = atan2(point.vy, point.vx) - atan2(cny, cnx); // angle between normal vector and velocity vector
-        float newVx = -(point.vx*cos(M_PI-2*thetaNormV) - point.vy*sin(M_PI-2*thetaNormV));
-        float newVy = point.vx*sin(M_PI-2*thetaNormV) + point.vy*cos(M_PI-2*thetaNormV);
+        cnx /= sqrt(cnx*cnx + cny*cny);
+        cny /= sqrt(cnx*cnx + cny*cny);
+
+        // old calculations: weird angle stuff
+        // float thetaNormV = atan2(point.vy, point.vx) - atan2(cny, cnx); // angle between normal vector and velocity vector
+        // float newVx = (point.vx*cos(M_PI-2*thetaNormV)*ELASTICITY - point.vy*sin(M_PI-2*thetaNormV)*ELASTICITY);
+        // float newVy = point.vx*sin(M_PI-2*thetaNormV)*ELASTICITY + point.vy*cos(M_PI-2*thetaNormV*ELASTICITY);
+
+        // new calculations: reflect point v over collsion normal
+        float newVx = point.vx - (1 + ELASTICITY)*(point.vx*cnx + point.vy*cny)*cnx;
+        float newVy = point.vy - (1 + ELASTICITY)*(point.vx*cnx + point.vy*cny)*cny;
         point.vx = newVx;
         point.vy = newVy;
         return -1;
@@ -123,63 +146,120 @@ float Shape::pointToLineDistance (Point &lp1, Point &lp2, Point &point, const bo
     lineVelocityX = (l1.vx + l2.vx)/2;
     lineVelocityY = (l1.vy + l2.vy)/2;
     if (!l1.fixed && !l2.fixed && point.fixed) {
-        l1.x -= lineVelocityX;
-        l2.x -= lineVelocityX;
-        l1.y -= lineVelocityY;
-        l2.y -= lineVelocityY;
+        l1.x += point.x - xInterception;
+        l2.x += point.x - xInterception;
+        l1.y += point.y - yInterception;
+        l2.y += point.y - yInterception;
+        
         // collision normal, represented by the vector between l1 and l2 that has been rotated 90 degrees
         float cnx = -(l2.y - l1.y);
         float cny = (l2.x - l1.x);
-        float thetaNormV = atan2(lineVelocityY, lineVelocityX) - atan2(cny, cnx); // angle between normal vector and velocity vector
-        float newVx = -(lineVelocityX*cos(M_PI-2*thetaNormV) - lineVelocityY*sin(M_PI-2*thetaNormV));
-        float newVy = (lineVelocityX*sin(M_PI-2*thetaNormV) + lineVelocityY*cos(M_PI-2*thetaNormV));
+        cnx /= sqrt(cnx*cnx + cny*cny);
+        cny /= sqrt(cnx*cnx + cny*cny);
+        float newVx = lineVelocityX - (1 + ELASTICITY)*(lineVelocityX*cnx + lineVelocityY*cny)*cnx;
+        float newVy = lineVelocityY - (1 + ELASTICITY)*(lineVelocityX*cnx + lineVelocityY*cny)*cny;
+        
         l1.vx = newVx;
         l1.vy = newVy;
         l2.vx = newVx;
         l2.vy = newVy;
-        l1.update(1, 0, 0, 0);
-        l2.update(1, 0, 0, 0);
         return -1;
     }
 
     // If neither the side nor the points are fixed, do the math to move them, taking into account their mass
-    const bool pointIsAboveSide = l1.y + slope*(point.x - l1.x) < point.y;
+    // const bool pointIsAboveSide = l1.y + slope*(point.x - l1.x) < point.y;
 
-    centerX = (l1.m*l1.x + l2.m*l2.x + point.m*point.x)/(l1.m + l2.m + point.m);
-    centerY = (l1.m*l1.y + l2.m*l2.y + point.m*point.y)/(l1.m + l2.m + point.m);
+    // centerX = (l1.m*l1.x + l2.m*l2.x + point.m*point.x)/(l1.m + l2.m + point.m);
+    // centerY = (l1.m*l1.y + l2.m*l2.y + point.m*point.y)/(l1.m + l2.m + point.m);
 
-    dPointCenter = sqrt(pow(point.x - centerX, 2) + pow(point.y - centerY, 2)); // distance from point to center
-    dIntPoint = sqrt(pow(xInterception - point.x, 2) + pow(yInterception - point.y, 2)); // distance from point to interception
-    dPointL1 = sqrt(pow(point.x - l1.x, 2) + pow(point.y - l1.y, 2)); // distance from point to L1
-    dPointL2 = sqrt(pow(point.x - l2.x, 2) + pow(point.y - l2.y, 2)); // distance from point to L2
-    dIntL1 = sqrt(pow(xInterception - l1.x, 2) + pow(yInterception - l1.y, 2)); // distance from interception to lp1
-    dIntL2 = sqrt(pow(xInterception - l2.x, 2) + pow(yInterception - l2.y, 2)); // distance from interception to lp2
+    // dPointCenter = sqrt(pow(point.x - centerX, 2) + pow(point.y - centerY, 2)); // distance from point to center
+    // dIntPoint = sqrt(pow(xInterception - point.x, 2) + pow(yInterception - point.y, 2)); // distance from point to interception
+    // dPointL1 = sqrt(pow(point.x - l1.x, 2) + pow(point.y - l1.y, 2)); // distance from point to L1
+    // dPointL2 = sqrt(pow(point.x - l2.x, 2) + pow(point.y - l2.y, 2)); // distance from point to L2
+    // dIntL1 = sqrt(pow(xInterception - l1.x, 2) + pow(yInterception - l1.y, 2)); // distance from interception to lp1
+    // dIntL2 = sqrt(pow(xInterception - l2.x, 2) + pow(yInterception - l2.y, 2)); // distance from interception to lp2
 
-    thetaXL2 = atan((l2.y - point.y)/(l2.x - point.x)); // angle between horizontal line going through point (the x-axis kinda) and PL2
-    thetaPL1 = acos(dIntPoint/dPointL1); // angle between PI and PL2
-    thetaPL2 = acos(dIntPoint/dPointL2) * (pointIsAboveSide ? -1 : 1); // angle between PI and PL2, negative if P is above side
+    // thetaXL2 = atan((l2.y - point.y)/(l2.x - point.x)); // angle between horizontal line going through point (the x-axis kinda) and PL2
+    // thetaPL1 = acos(dIntPoint/dPointL1); // angle between PI and PL2
+    // thetaPL2 = acos(dIntPoint/dPointL2) * (pointIsAboveSide ? -1 : 1); // angle between PI and PL2, negative if P is above side
 
-    startLineLength = dPointCenter * (
-        ((centerX - point.x)/dPointCenter) * (xInterception - point.x)/dIntPoint +
-        ((centerY - point.y)/dPointCenter) * (yInterception - point.y)/dIntPoint
-    );
+    // startLineLength = dPointCenter * (
+    //     ((centerX - point.x)/dPointCenter) * (xInterception - point.x)/dIntPoint +
+    //     ((centerY - point.y)/dPointCenter) * (yInterception - point.y)/dIntPoint
+    // );
 
-    anchorX = point.x + startLineLength*cos(thetaPL2 + thetaXL2);
-    anchorY = point.y + startLineLength*sin(thetaPL2 + thetaXL2);
+    // anchorX = point.x + startLineLength*cos(thetaPL2 + thetaXL2);
+    // anchorY = point.y + startLineLength*sin(thetaPL2 + thetaXL2);
 
-    dAnchorL1 = sqrt(pow(anchorX - l1.x, 2) + pow(anchorY - l1.y, 2)); // distance from anchor to L1
-    dAnchorL2 = sqrt(pow(anchorX - l2.x, 2) + pow(anchorY - l2.y, 2)); // distance from anchor to L2
-    dAnchorInt = sqrt(pow(anchorX - xInterception, 2) + pow(anchorY - yInterception, 2)); // distance from anchor to interception
-    thetaAnchorL1 = asin(dAnchorInt/dAnchorL1); // Angle between AL1 and line parallel to the side at A
-    thetaAnchorL2 = asin(dAnchorInt/dAnchorL2); // Angle between AL2 and line parallel to the side at A
+    // dAnchorL1 = sqrt(pow(anchorX - l1.x, 2) + pow(anchorY - l1.y, 2)); // distance from anchor to L1
+    // dAnchorL2 = sqrt(pow(anchorX - l2.x, 2) + pow(anchorY - l2.y, 2)); // distance from anchor to L2
+    // dAnchorInt = sqrt(pow(anchorX - xInterception, 2) + pow(anchorY - yInterception, 2)); // distance from anchor to interception
+    // thetaAnchorL1 = asin(dAnchorInt/dAnchorL1); // Angle between AL1 and line parallel to the side at A
+    // thetaAnchorL2 = asin(dAnchorInt/dAnchorL2); // Angle between AL2 and line parallel to the side at A
 
-    thetaNS = 0.5 * (thetaAnchorL2*l2.m - thetaAnchorL1*l1.m)/(l1.m + l2.m) * (pointIsAboveSide ? -1 : 1); // angle relative to the side of the new side
+    // thetaNS = 0.5 * (thetaAnchorL2*l2.m - thetaAnchorL1*l1.m)/(l1.m + l2.m) * (pointIsAboveSide ? -1 : 1); // angle relative to the side of the new side
 
-    l1.x = dIntL1 * cos(thetaXL2 + thetaPL2 + M_PI_2 + thetaNS + (pointIsAboveSide ? M_PI : 0)) + anchorX;
-    l1.y = dIntL1 * sin(thetaXL2 + thetaPL2 + M_PI_2 + thetaNS + (pointIsAboveSide ? M_PI : 0)) + anchorY;
-    l2.x = dIntL2 * cos(thetaXL2 + thetaPL2 + M_PI_2 + thetaNS + (pointIsAboveSide ? 0 : M_PI)) + anchorX;
-    l2.y = dIntL2 * sin(thetaXL2 + thetaPL2 + M_PI_2 + thetaNS + (pointIsAboveSide ? 0 : M_PI)) + anchorY;
-    point.x = anchorX;
-    point.y = anchorY;
+    // l1.x = dIntL1 * cos(thetaXL2 + thetaPL2 + M_PI_2 + thetaNS + (pointIsAboveSide ? M_PI : 0)) + anchorX;
+    // l1.y = dIntL1 * sin(thetaXL2 + thetaPL2 + M_PI_2 + thetaNS + (pointIsAboveSide ? M_PI : 0)) + anchorY;
+    // l2.x = dIntL2 * cos(thetaXL2 + thetaPL2 + M_PI_2 + thetaNS + (pointIsAboveSide ? 0 : M_PI)) + anchorX;
+    // l2.y = dIntL2 * sin(thetaXL2 + thetaPL2 + M_PI_2 + thetaNS + (pointIsAboveSide ? 0 : M_PI)) + anchorY;
+    // point.x = anchorX;
+    // point.y = anchorY;
+
+    // new, better math w/ vectors
+
+    // intersection vector
+    float intVecX = xInterception - point.x;
+    float intVecY = yInterception - point.y;
+
+    // psuedoPointX is the imaginary point that this point collides with, and represents the side it is colliding with
+    // for simplicity in the new velocity calculations, and because these points technically have no volume, the points will be assumed to have a diameter of 1
+    float pseudoPointX = point.x - intVecX/sqrt(pow(intVecX, 2) + pow(intVecY, 2));
+    float pseudoPointY = point.y - intVecY/sqrt(pow(intVecX, 2) + pow(intVecY, 2));
+
+    // how close the intercept is to l1
+    float projectionFactor = sqrt(pow(l1.x - xInterception, 2) + pow(l1.y - yInterception, 2)) / sqrt(pow(l1.x - l2.x, 2) + pow(l1.y - l2.y, 2));
+
+    // weights (how much each point should be moved), which are then normalized
+    float wPoint = 1/point.m;
+    float wL1 = (1 - projectionFactor)/l1.m;
+    float wL2 = projectionFactor/l2.m;
+    float weightTotal = wPoint + wL1 + wL2;
+    wPoint /= weightTotal;
+    wL1 /= weightTotal;
+    wL2 /= weightTotal;
+
+    // adjust point positions
+    l1.x -= (xInterception-point.x)*wL1;
+    l1.y -= (yInterception-point.y)*wL1;
+    l2.x -= (xInterception-point.x)*wL2;
+    l2.y -= (yInterception-point.y)*wL2;
+    point.x += (xInterception-point.x)*wPoint;
+    point.y += (yInterception-point.y)*wPoint;
+    // if necessary, fix point to side here
+
+    // adjust point velocities
+    // normal vector
+    float normX = pseudoPointX - point.x;
+    float normY = pseudoPointY - point.y;
+    float normLen = sqrt(pow(normX, 2) + pow(normY, 2));
+    normX /= normLen;
+    normY /= normLen;
+
+    // relative velocity, which represents the velocity of point relative to the line
+    float relVX = point.vx - lineVelocityX;
+    float relVY = point.vy - lineVelocityY;
+    // relative velocity along normal
+    float relVN = relVX*normX + relVY*normY;
+
+    // j is the magnitude of the impulse vector J (the second term of the denominator is 2/(...) because I'm taking the average mass of L1 and L2)
+    float j = (1+ELASTICITY)*(relVN)/(1/point.m + 2/(l1.m + l2.m));
+    point.vx -= j/point.m*normX;
+    point.vy -= j/point.m*normY;
+    l1.vx += j/l1.m*normX;
+    l1.vy += j/l1.m*normY;
+    l2.vx += j/l2.m*normX;
+    l2.vy += j/l2.m*normY;
+
     return -1;
 }

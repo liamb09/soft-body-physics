@@ -22,7 +22,7 @@ void SoftBodyPhysics2D::handleCollisions() {
     for (int i = 0; i < shapes.size(); i++) {
         for (int j = 0; j < shapes.size(); j++) {
             if (i != j) {
-                shapes[i].handleCollisions(shapes[j]);
+                shapes[i].handleCollisions(shapes[j], ELASTICITY);
             }
         }
     }
@@ -38,4 +38,13 @@ void SoftBodyPhysics2D::addShape (Shape &shape) {
 }
 void SoftBodyPhysics2D::addShape (std::vector<Point> points, const bool &fixed) {
     shapes.emplace_back(Shape(std::move(points), fixed));
+}
+
+void SoftBodyPhysics2D::addRect (const float &x, const float &y, const float &width, const float &height, const float &m, const bool &fixed) {
+    addShape(std::vector<Point>{
+        Point(x, y, m),
+        Point(x+width, y, m),
+        Point(x+width, y+height, m),
+        Point(x, y+height, m),
+    }, fixed);
 }
