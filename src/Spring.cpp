@@ -34,6 +34,6 @@ void Spring::update (const float &dt) {
 }
 
 void Spring::render (SDL_Renderer* renderer) {
-    // std::cout << "(" << p1.x << ", " << p1.y << ") to (" << p2.x << ", " << p2.y << ")\n";
+    // std::cout << "(" << (*p1).x << ", " << (*p1).y << ") to (" << (*p2).x << ", " << (*p2).y << ")\n";
     SDL_RenderLine(renderer, (*p1).x, (*p1).y, (*p2).x, (*p2).y);
 }

@@ -27,7 +27,7 @@ public:
 
     void addShape (Shape shape);
     void addShape (std::vector<Point> points, const bool &fixed = false);
-    void addShape (std::vector<Point>* points, const bool &fixed = false);
+    // void addShape (std::vector<Point>* points, const bool &fixed = false);
 
     // adds a rectangle with its top left corner at (x,y)
     void addRect (const float &x, const float &y, const float &width, const float &height, const float &m = 5, const bool &fixed = false);

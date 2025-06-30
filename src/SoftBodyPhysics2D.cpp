@@ -47,9 +47,9 @@ void SoftBodyPhysics2D::addShape (Shape shape) {
 void SoftBodyPhysics2D::addShape (std::vector<Point> points, const bool &fixed) {
     shapes.emplace_back(Shape(std::move(points), fixed));
 }
-void SoftBodyPhysics2D::addShape (std::vector<Point>* points, const bool &fixed) {
-    shapes.emplace_back(Shape(points, fixed));
-}
+// void SoftBodyPhysics2D::addShape (std::vector<Point>* points, const bool &fixed) {
+//     shapes.emplace_back(Shape(points, fixed));
+// }
 
 void SoftBodyPhysics2D::addRect (const float &x, const float &y, const float &width, const float &height, const float &m, const bool &fixed) {
     addShape(std::vector<Point>{

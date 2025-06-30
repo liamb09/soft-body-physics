@@ -8,8 +8,8 @@ struct Spring {
 
     Point* p1;
     Point* p2;
-    float k; // spring constant
-    float damping; // between 0 and 1; 0 = no damping
+    float k = 750; // spring constant
+    float damping = 30;
     float restDistance;
     float dirLen, normDirX, normDirY, vRelX, vRelY;
 

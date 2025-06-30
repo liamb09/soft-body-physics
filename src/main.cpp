@@ -1,4 +1,4 @@
-// TO RUN: g++ src/main.cpp src/Point.cpp src/Spring.cpp src/Shape.cpp src/SoftBodyPhysics2D.cpp -std=c++11 `pkg-config --libs --cflags sdl3`; ./a.out
+// TO RUN: g++ src/main.cpp src/Point.cpp src/Spring.cpp src/Shape.cpp src/SoftBodyPhysics2D.cpp -std=c++11 `pkg-config --libs --cflags sdl3` -march=x86-64 -mtune=generic; ./a.out
 
 #include <iostream>
 #include <vector>
@@ -79,39 +79,67 @@ int main(int argc, char* argv[]) {
     //     Point(250, HEIGHT/2+50-100)
     // }, true);
 
-    for (int i = 150; i < WIDTH-200; i += 125) {
-        for (int j = 50; j < HEIGHT-275; j += 125) {
-            engine.addRect(i, j, rand()%41+10, rand()%41+10);
+    // for (int i = 150; i < WIDTH-200; i += 125) {
+    //     for (int j = 50; j < HEIGHT-275; j += 125) {
+    //         engine.addRect(i, j, rand()%41+10, rand()%41+10);
+    //     }
+    // }
+
+    engine.addRect(160, 150, 30, 30, 5, true);
+    engine.addRect(400, 300, 30, 30, 5, true);
+    
+    // engine.addLinkedShape(
+    //     std::vector<std::vector<Point>>{
+    //         std::vector<Point>{
+    //             Point(150, 50),
+    //             Point(200, 50),
+    //             Point(200, 100),
+    //             Point(150, 100)
+    //         },
+    //         std::vector<Point>{
+    //             Point(225, 50),
+    //             Point(275, 50),
+    //             Point(275, 100),
+    //             Point(225, 100)
+    //         }
+    //     },
+    //     std::vector<std::vector<std::pair<int, int>>>{
+    //         std::vector<std::pair<int, int>>{{0, 1}, {1, 0}},
+    //         std::vector<std::pair<int, int>>{{0, 2}, {1, 3}},
+    //     },
+    //     {false, false}
+    // );
+
+    engine.addShape(Shape(
+        std::vector<Point>{
+            Point(150, 50),
+            Point(200, 50),
+            Point(250, 50),
+            Point(300, 50),
+            Point(300, 100),
+            Point(250, 100),
+            Point(200, 100),
+            Point(150, 100)
+        },
+        std::vector<std::pair<int, int>>{
+            {0, 1},
+            {1, 2},
+            {2, 3},
+            {3, 4},
+            {4, 5},
+            {5, 6},
+            {6, 7},
+            {0, 7},
+            {0, 6},
+            {1, 7},
+            {1, 6},
+            {1, 5},
+            {2, 6},
+            {2, 5},
+            {2, 4},
+            {3, 5},
         }
-    }
-
-    // engine.addRect(150, 50, 50, 50);
-    // engine.addRect(225, 25, 25, 40);
-    // engine.addRect(250, 100, 70, 30);
-
-    // cube
-    // engine.addShape(std::vector<Point>{
-    //     Point(275, 50, 5),
-    //     Point(300, 75, 5),
-    //     Point(275, 100, 5),
-    //     Point(250, 75, 5),
-    // });
-    // engine.addShape(std::vector<Point>{
-    //     Point(250, 250, 5),
-    //     Point(300, 250, 5),
-    //     Point(300, 300, 5),
-    //     Point(250, 300, 5),
-    // });
-
-    // Hexagon
-    // engine.addShape(std::vector<Point>{
-    //     Point(60, 75),
-    //     Point(75, 50),
-    //     Point(100, 50),
-    //     Point(115, 75),
-    //     Point(100, 100),
-    //     Point(75, 100)
-    // });
+    ));
 
     Uint64 startTime;
     float dt;
