@@ -4,6 +4,8 @@
 #include "../include/Point.hpp"
 #include "../include/Spring.hpp"
 
+using namespace std;
+
 Spring::Spring (Point* p1, Point* p2, const float &k) : p1(p1), p2(p2), k(k), damping(0.9) {
     restDistance = sqrt(pow((*p1).x - (*p2).x, 2) + pow((*p1).y - (*p2).y, 2));
 }
@@ -34,6 +36,6 @@ void Spring::update (const float &dt) {
 }
 
 void Spring::render (SDL_Renderer* renderer) {
-    // std::cout << "(" << (*p1).x << ", " << (*p1).y << ") to (" << (*p2).x << ", " << (*p2).y << ")\n";
+    // cout << "(" << (*p1).x << ", " << (*p1).y << ") to (" << (*p2).x << ", " << (*p2).y << ")\n";
     SDL_RenderLine(renderer, (*p1).x, (*p1).y, (*p2).x, (*p2).y);
 }

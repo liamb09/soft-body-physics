@@ -4,6 +4,8 @@
 #include <SDL3/SDL.h>
 #include "Point.hpp"
 
+using namespace std;
+
 struct Spring {
 
     Point* p1;

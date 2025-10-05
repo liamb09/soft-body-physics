@@ -4,7 +4,9 @@
 #include "../include/Spring.hpp"
 #include "../include/Shape.hpp"
 
-Shape::Shape (std::vector<Point> points, const bool &fixed) : points(std::move(points)), fixed(fixed) {
+using namespace std;
+
+Shape::Shape (vector<Point> points, const bool &fixed) : points(move(points)), fixed(fixed) {
     if (!fixed) {
         // add springs
         for (int i = 0; i < this->points.size()-1; i++) {
@@ -19,11 +21,11 @@ Shape::Shape (std::vector<Point> points, const bool &fixed) : points(std::move(p
         }
     }
 }
-// Shape::Shape (std::vector<Point>* points, const bool &fixed) : Shape(*points, fixed) {}
-Shape::Shape (std::vector<Point> points, const std::vector<std::pair<int, int>> &springPairs, const bool &fixed) : points(std::move(points)), fixed(fixed) {
+// Shape::Shape (vector<Point>* points, const bool &fixed) : Shape(*points, fixed) {}
+Shape::Shape (vector<Point> points, const vector<pair<int, int>> &springPairs, const bool &fixed) : points(move(points)), fixed(fixed) {
     if (!fixed) {
         // add springs
-        for (const std::pair<int, int> &pair : springPairs) {
+        for (const pair<int, int> &pair : springPairs) {
             springs.emplace_back(&(this->points[pair.first]), &(this->points[pair.second]), 750, 30);
         }
     } else {
@@ -34,7 +36,7 @@ Shape::Shape (std::vector<Point> points, const std::vector<std::pair<int, int>> 
     }
 }
 
-std::vector<Point>& Shape::getPoints () {
+vector<Point>& Shape::getPoints () {
     return points;
 }
 Point& Shape::getPoint (const int &index) {
@@ -48,10 +50,10 @@ void Shape::update (const float &dt, const float xForce, const float yForce, con
     outermostPoints = {100000, -100000, -100000, 100000};
     for (Point &point : points) {
         if (!fixed) point.update(dt, xForce, yForce, gravity);
-        outermostPoints[0] = std::min(outermostPoints[0], point.y);
-        outermostPoints[1] = std::max(outermostPoints[1], point.x);
-        outermostPoints[2] = std::max(outermostPoints[2], point.y);
-        outermostPoints[3] = std::min(outermostPoints[3], point.x);
+        outermostPoints[0] = min(outermostPoints[0], point.y);
+        outermostPoints[1] = max(outermostPoints[1], point.x);
+        outermostPoints[2] = max(outermostPoints[2], point.y);
+        outermostPoints[3] = min(outermostPoints[3], point.x);
     }
 }
 
@@ -87,7 +89,7 @@ void Shape::handleCollisions(Shape &otherShape, const float &ELASTICITY) {
     // To do so, for each point in the other shape, it calculates how many times the
     //   line going right intersects with the border of the shape.
     // If this number of intersections is odd, the other point is in this shape.
-    std::vector<Point> &otherPoints = otherShape.getPoints();
+    vector<Point> &otherPoints = otherShape.getPoints();
     int numIntersects;
     float currentDist;
     float closestSideDist = 100000;

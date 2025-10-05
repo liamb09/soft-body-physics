@@ -5,10 +5,12 @@
 #include "Spring.hpp"
 #include "Point.hpp"
 
+using namespace std;
+
 class Shape {
 
-    std::vector<Point> points;
-    std::vector<Spring> springs;
+    vector<Point> points;
+    vector<Spring> springs;
     bool fixed = false;
 
     // declaring vars for collision handling to save memory
@@ -16,13 +18,13 @@ class Shape {
 
 public:
 
-    std::vector<float> outermostPoints; // top right bottom left
+    vector<float> outermostPoints; // top right bottom left
 
-    Shape (std::vector<Point> points, const bool &fixed = false);
-    // Shape (std::vector<Point>* points, const bool &fixed = false);
-    Shape (std::vector<Point> points, const std::vector<std::pair<int, int>> &springPairs, const bool &fixed = false);
+    Shape (vector<Point> points, const bool &fixed = false);
+    // Shape (vector<Point>* points, const bool &fixed = false);
+    Shape (vector<Point> points, const vector<pair<int, int>> &springPairs, const bool &fixed = false);
 
-    std::vector<Point>& getPoints ();
+    vector<Point>& getPoints ();
     Point& getPoint (const int &index);
 
     void update (const float &dt, const float xForce, const float yForce, const float gravity);

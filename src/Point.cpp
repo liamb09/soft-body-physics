@@ -3,11 +3,14 @@
 #include <SDL3/SDL.h>
 #include "../include/Point.hpp"
 
+using namespace std;
+
 Point::Point (float x, float y, const float &m, const bool fixed) : x(x), y(y), vx(0), vy(0), m(m), fixed(fixed) {}
-Point::Point (float x, float y, float vx, float vy, const float &m, const bool fixed) : x(x), y(y), vx(vx), vy(vy), m(m), fixed(fixed) {}
+Point::Point (float x, float y, float vx, float vy, const float &m, const bool fixed) : x(x), y(y), vx(vx), vy(vy), 
+    m(m), fixed(fixed) {}
 
 void Point::update (const float &dt, const float xForce, const float yForce, const float gravity) {
-    // std::cout << y << "\n";
+    // cout << x << " " << y << "\n";
     // "F = ma" therefore "a = F/m"
     if (fixed) return;
     vx += xForce/m*dt;

@@ -14,6 +14,8 @@
 #include "../include/Shape.hpp"
 #include "../include/SoftBodyPhysics2D.hpp"
 
+using namespace std;
+
 int main(int argc, char* argv[]) {
 
     // Setup window
@@ -51,20 +53,20 @@ int main(int argc, char* argv[]) {
     SoftBodyPhysics2D engine(-200, 1);
 
     // rectangle ground
-    engine.addShape(std::vector<Point>{
+    engine.addShape(vector<Point>{
         Point(100, HEIGHT-100, 5),
         Point(100, HEIGHT-200, 5),
         Point(WIDTH-100, HEIGHT-200, 5),
         Point(WIDTH-100, HEIGHT-100, 5),
     }, true);
 
-    engine.addShape(std::vector<Point>{
+    engine.addShape(vector<Point>{
         Point(25, HEIGHT-100, 5),
         Point(25, HEIGHT-350, 5),
         Point(100, HEIGHT-200, 5),
         Point(100, HEIGHT-100, 5)
     }, true);
-    engine.addShape(std::vector<Point>{
+    engine.addShape(vector<Point>{
         Point(WIDTH-25, HEIGHT-100, 5),
         Point(WIDTH-25, HEIGHT-350, 5),
         Point(WIDTH-100, HEIGHT-200, 5),
@@ -72,7 +74,7 @@ int main(int argc, char* argv[]) {
     }, true);
 
     // Parallelogram
-    // engine.addShape(std::vector<Point>{
+    // engine.addShape(vector<Point>{
     //     Point(50, HEIGHT/2-100),
     //     Point(50, HEIGHT/2+50-100),
     //     Point(250, HEIGHT/2+100-100),
@@ -84,62 +86,78 @@ int main(int argc, char* argv[]) {
     //         engine.addRect(i, j, rand()%41+10, rand()%41+10);
     //     }
     // }
-
-    engine.addRect(160, 150, 30, 30, 5, true);
-    engine.addRect(400, 300, 30, 30, 5, true);
     
+    // Linked shape
     // engine.addLinkedShape(
-    //     std::vector<std::vector<Point>>{
-    //         std::vector<Point>{
+    //     vector<vector<Point>>{
+    //         vector<Point>{
     //             Point(150, 50),
     //             Point(200, 50),
     //             Point(200, 100),
     //             Point(150, 100)
     //         },
-    //         std::vector<Point>{
+    //         vector<Point>{
     //             Point(225, 50),
     //             Point(275, 50),
     //             Point(275, 100),
     //             Point(225, 100)
     //         }
     //     },
-    //     std::vector<std::vector<std::pair<int, int>>>{
-    //         std::vector<std::pair<int, int>>{{0, 1}, {1, 0}},
-    //         std::vector<std::pair<int, int>>{{0, 2}, {1, 3}},
+    //     vector<vector<pair<int, int>>>{
+    //         vector<pair<int, int>>{{0, 1}, {1, 0}},
+    //         vector<pair<int, int>>{{0, 2}, {1, 3}},
     //     },
     //     {false, false}
     // );
 
-    engine.addShape(Shape(
-        std::vector<Point>{
-            Point(150, 50),
-            Point(200, 50),
-            Point(250, 50),
-            Point(300, 50),
-            Point(300, 100),
-            Point(250, 100),
-            Point(200, 100),
-            Point(150, 100)
-        },
-        std::vector<std::pair<int, int>>{
-            {0, 1},
-            {1, 2},
-            {2, 3},
-            {3, 4},
-            {4, 5},
-            {5, 6},
-            {6, 7},
-            {0, 7},
-            {0, 6},
-            {1, 7},
-            {1, 6},
-            {1, 5},
-            {2, 6},
-            {2, 5},
-            {2, 4},
-            {3, 5},
-        }
-    ));
+    // Grid (manual)
+    // engine.addShape(Shape(
+    //     vector<Point>{
+    //         Point(150, 50),
+    //         Point(200, 50),
+    //         Point(250, 50),
+    //         Point(300, 50),
+    //         Point(300, 100),
+    //         Point(250, 100),
+    //         Point(200, 100),
+    //         Point(150, 100)
+    //     },
+    //     vector<pair<int, int>>{
+    //         {0, 1},
+    //         {1, 2},
+    //         {2, 3},
+    //         {3, 4},
+    //         {4, 5},
+    //         {5, 6},
+    //         {6, 7},
+    //         {0, 7},
+    //         {0, 6},
+    //         {1, 7},
+    //         {1, 6},
+    //         {1, 5},
+    //         {2, 6},
+    //         {2, 5},
+    //         {2, 4},
+    //         {3, 5},
+    //     }
+    // ));
+
+    // engine.addShape(vector<Point>{
+    //     Point(150, 50),
+    //     Point(300, 50),
+    //     Point(300, 150),
+    //     Point(250, 150),
+    //     Point(250, 100),
+    //     Point(200, 100),
+    //     Point(200, 150),
+    //     Point(150, 150)
+    // });
+
+    // engine.addGridShape(150, 50, 150, 100, 4, 6);
+
+    // engine.addRect(160, 350, 30, 30, 5, true);
+    engine.addRect(175, 300, 30, 30, 5);
+    engine.addRect(185, 100, 30, 30, 5);
 
     Uint64 startTime;
     float dt;
@@ -169,8 +187,8 @@ int main(int argc, char* argv[]) {
         SDL_RenderPresent(renderer);
 
         // Calculate dt
-        dt = std::min((float) (SDL_GetTicks() - startTime)/1000, 0.05f); // clamp dt to 0.05s to prevent integration errors
-        // std::cout << dt << "\n";
+        dt = min((float) (SDL_GetTicks() - startTime)/1000, 0.05f); // clamp dt to 0.05s to prevent integration errors
+        // cout << dt << "\n";
     }
 
     // Close and destroy the window

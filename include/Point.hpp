@@ -2,6 +2,8 @@
 #include <iostream>
 #include <SDL3/SDL.h>
 
+using namespace std;
+
 struct Point {
 
     float x, y, vx, vy;
