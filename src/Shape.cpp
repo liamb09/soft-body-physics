@@ -6,7 +6,7 @@
 
 using namespace std;
 
-Shape::Shape (vector<Point> points, const bool &fixed) : points(move(points)), fixed(fixed) {
+Shape::Shape (vector<Point> points, const bool &fixed) : points(std::move(points)), fixed(fixed) {
     if (!fixed) {
         // add springs
         for (int i = 0; i < this->points.size()-1; i++) {
@@ -22,7 +22,7 @@ Shape::Shape (vector<Point> points, const bool &fixed) : points(move(points)), f
     }
 }
 // Shape::Shape (vector<Point>* points, const bool &fixed) : Shape(*points, fixed) {}
-Shape::Shape (vector<Point> points, const vector<pair<int, int>> &springPairs, const bool &fixed) : points(move(points)), fixed(fixed) {
+Shape::Shape (vector<Point> points, const vector<pair<int, int>> &springPairs, const bool &fixed) : points(std::move(points)), fixed(fixed) {
     if (!fixed) {
         // add springs
         for (const pair<int, int> &pair : springPairs) {

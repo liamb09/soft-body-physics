@@ -1,3 +1,10 @@
+
+# Executable/Build files
 a.out
+build/
+
+# IDE Files
 .vscode/
+
+# OS Files
 .DS_Store

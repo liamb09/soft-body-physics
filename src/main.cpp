@@ -29,8 +29,6 @@ int main(int argc, char* argv[]) {
 
     window = SDL_CreateWindow(
         "Soft Body Physics",
-        SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED,
         WIDTH,
         HEIGHT,
         SDL_WINDOW_OPENGL
@@ -42,7 +40,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Setup renderer
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, NULL, SDL_RENDERER_ACCELERATED);
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, NULL);
     if (renderer == NULL) {
         SDL_DestroyWindow(window);
         SDL_Quit();

@@ -44,10 +44,10 @@ void SoftBodyPhysics2D::render (SDL_Renderer* &renderer) {
 }
 
 void SoftBodyPhysics2D::addShape (Shape shape) {
-    shapes.push_back(move(shape));
+    shapes.push_back(std::move(shape));
 }
 void SoftBodyPhysics2D::addShape (vector<Point> points, const bool &fixed) {
-    shapes.emplace_back(Shape(move(points), fixed));
+    shapes.emplace_back(Shape(std::move(points), fixed));
 }
 // void SoftBodyPhysics2D::addShape (vector<Point>* points, const bool &fixed) {
 //     shapes.emplace_back(Shape(points, fixed));
