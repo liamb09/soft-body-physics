@@ -16,6 +16,9 @@ float Vector2D::dot (Vector2D &v, bool normalizeFirst) {
     else
         return x*v.x + y*v.y;
 }
+float Vector2D::dot (float ox, float oy) {
+    return x*ox + y*oy;
+}
 
 void Vector2D::normalize () {
     x /= magnitude();

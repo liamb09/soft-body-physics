@@ -1,4 +1,8 @@
-// TO RUN: g++ src/main.cpp src/Point.cpp src/Spring.cpp src/Shape.cpp src/SoftBodyPhysics2D.cpp -std=c++11 `pkg-config --libs --cflags sdl3` -march=x86-64 -mtune=generic; ./a.out
+// TO RUN: ------g++ src/main.cpp src/Point.cpp src/Spring.cpp src/Shape.cpp src/SoftBodyPhysics2D.cpp -std=c++11 `pkg-config --libs --cflags sdl3` -march=x86-64 -mtune=generic; ./a.out
+// cd build
+// cmake ..
+// make
+// ./main
 
 #include <iostream>
 #include <vector>
@@ -48,35 +52,27 @@ int main(int argc, char* argv[]) {
     }
 
     // Initialize simulation
-    SoftBodyPhysics2D engine(-200, 1);
+    SoftBodyPhysics2D engine(0, 1);
 
-    // rectangle ground
-    engine.addShape(vector<Point>{
-        Point(100, HEIGHT-100, 5),
-        Point(100, HEIGHT-200, 5),
-        Point(WIDTH-100, HEIGHT-200, 5),
-        Point(WIDTH-100, HEIGHT-100, 5),
-    }, true);
-
-    engine.addShape(vector<Point>{
-        Point(25, HEIGHT-100, 5),
-        Point(25, HEIGHT-350, 5),
-        Point(100, HEIGHT-200, 5),
-        Point(100, HEIGHT-100, 5)
-    }, true);
-    engine.addShape(vector<Point>{
-        Point(WIDTH-25, HEIGHT-100, 5),
-        Point(WIDTH-25, HEIGHT-350, 5),
-        Point(WIDTH-100, HEIGHT-200, 5),
-        Point(WIDTH-100, HEIGHT-100, 5)
-    }, true);
-
-    // Parallelogram
+    // // rectangle ground
     // engine.addShape(vector<Point>{
-    //     Point(50, HEIGHT/2-100),
-    //     Point(50, HEIGHT/2+50-100),
-    //     Point(250, HEIGHT/2+100-100),
-    //     Point(250, HEIGHT/2+50-100)
+    //     Point(100, HEIGHT-100, 5),
+    //     Point(100, HEIGHT-200, 5),
+    //     Point(WIDTH-100, HEIGHT-200, 5),
+    //     Point(WIDTH-100, HEIGHT-100, 5),
+    // }, true);
+
+    // engine.addShape(vector<Point>{
+    //     Point(25, HEIGHT-100, 5),
+    //     Point(25, HEIGHT-350, 5),
+    //     Point(100, HEIGHT-200, 5),
+    //     Point(100, HEIGHT-100, 5)
+    // }, true);
+    // engine.addShape(vector<Point>{
+    //     Point(WIDTH-25, HEIGHT-100, 5),
+    //     Point(WIDTH-25, HEIGHT-350, 5),
+    //     Point(WIDTH-100, HEIGHT-200, 5),
+    //     Point(WIDTH-100, HEIGHT-100, 5)
     // }, true);
 
     // for (int i = 150; i < WIDTH-200; i += 125) {
@@ -153,9 +149,15 @@ int main(int argc, char* argv[]) {
 
     // engine.addGridShape(150, 50, 150, 100, 4, 6);
 
-    // engine.addRect(160, 350, 30, 30, 5, true);
-    engine.addRect(175, 300, 30, 30, 5);
-    engine.addRect(185, 100, 30, 30, 5);
+    Point p(250, 300);
+    p.v.x = 100;
+    engine.addShape(vector<Point>{
+        Point(200, 300),
+        Point(225, 275),
+        p,
+        Point(225, 325)
+    });
+    engine.addRect(400, 200, 200, 200);
 
     Uint64 startTime;
     float dt;

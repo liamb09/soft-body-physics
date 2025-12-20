@@ -3,6 +3,7 @@
 #include <SDL3/SDL.h>
 #include "../include/Spring.hpp"
 #include "../include/Shape.hpp"
+#include "../include/Vector2D.hpp"
 
 using namespace std;
 
@@ -159,21 +160,21 @@ void Shape::resolveVelocities (Point &lp1, Point &lp2, Point &point, const float
         cny /= sqrt(cnx*cnx + cny*cny);
 
         // old calculations: weird angle stuff
-        // float thetaNormV = atan2(point.vy, point.vx) - atan2(cny, cnx); // angle between normal vector and velocity vector
-        // float newVx = (point.vx*cos(M_PI-2*thetaNormV)*ELASTICITY - point.vy*sin(M_PI-2*thetaNormV)*ELASTICITY);
-        // float newVy = point.vx*sin(M_PI-2*thetaNormV)*ELASTICITY + point.vy*cos(M_PI-2*thetaNormV*ELASTICITY);
+        // float thetaNormV = atan2(point.v.y, point.v.x) - atan2(cny, cnx); // angle between normal vector and velocity vector
+        // float newVx = (point.v.x*cos(M_PI-2*thetaNormV)*ELASTICITY - point.v.y*sin(M_PI-2*thetaNormV)*ELASTICITY);
+        // float newVy = point.v.x*sin(M_PI-2*thetaNormV)*ELASTICITY + point.v.y*cos(M_PI-2*thetaNormV*ELASTICITY);
 
         // new calculations: reflect point v over collsion normal
-        float newVx = point.vx - (1 + ELASTICITY)*(point.vx*cnx + point.vy*cny)*cnx;
-        float newVy = point.vy - (1 + ELASTICITY)*(point.vx*cnx + point.vy*cny)*cny;
-        point.vx = newVx;
-        point.vy = newVy;
+        float newVx = point.v.x - (1 + ELASTICITY)*(point.v.x*cnx + point.v.y*cny)*cnx;
+        float newVy = point.v.y - (1 + ELASTICITY)*(point.v.x*cnx + point.v.y*cny)*cny;
+        point.v.x = newVx;
+        point.v.y = newVy;
         return;
     }
 
     // If only the point is fixed, move the side to the edge of the point
-    lineVelocityX = (l1.vx + l2.vx)/2;
-    lineVelocityY = (l1.vy + l2.vy)/2;
+    lineVelocityX = (l1.v.x + l2.v.x)/2;
+    lineVelocityY = (l1.v.y + l2.v.y)/2;
     if (!l1.fixed && !l2.fixed && point.fixed) {
         l1.x += point.x - xInterception;
         l2.x += point.x - xInterception;
@@ -188,10 +189,10 @@ void Shape::resolveVelocities (Point &lp1, Point &lp2, Point &point, const float
         float newVx = lineVelocityX - (1 + ELASTICITY)*(lineVelocityX*cnx + lineVelocityY*cny)*cnx;
         float newVy = lineVelocityY - (1 + ELASTICITY)*(lineVelocityX*cnx + lineVelocityY*cny)*cny;
         
-        l1.vx = newVx;
-        l1.vy = newVy;
-        l2.vx = newVx;
-        l2.vy = newVy;
+        l1.v.x = newVx;
+        l1.v.y = newVy;
+        l2.v.x = newVx;
+        l2.v.y = newVy;
         return;
     }
 
@@ -256,9 +257,10 @@ void Shape::resolveVelocities (Point &lp1, Point &lp2, Point &point, const float
     l1.y -= (yInterception-point.y)*wL1;
     l2.x -= (xInterception-point.x)*wL2;
     l2.y -= (yInterception-point.y)*wL2;
-    point.x += (xInterception-point.x)*wPoint;
-    point.y += (yInterception-point.y)*wPoint;
-    // if necessary, fix point to side here
+    // point.x += (xInterception-point.x)*wPoint;
+    // point.y += (yInterception-point.y)*wPoint;
+    point.x = l1.x + (l2.x-l1.x)*projectionFactor;
+    point.y = l1.y + (l2.y-l1.y)*projectionFactor;
 
     // adjust point velocities
     // normal vector
@@ -269,17 +271,38 @@ void Shape::resolveVelocities (Point &lp1, Point &lp2, Point &point, const float
     normY /= normLen;
 
     // relative velocity, which represents the velocity of point relative to the line
-    relVX = point.vx - lineVelocityX;
-    relVY = point.vy - lineVelocityY;
+    relVX = point.v.x - lineVelocityX;
+    relVY = point.v.y - lineVelocityY;
     // relative velocity along normal
     relVN = relVX*normX + relVY*normY;
 
     // (J) magnitude of the impulse vector J (the second term of the denominator is 2/(...) because I'm taking the average mass of L1 and L2)
     impulseMagnitude = (1+ELASTICITY)*(relVN)/(1/point.m + 2/(l1.m + l2.m));
-    point.vx -= impulseMagnitude/point.m*normX;
-    point.vy -= impulseMagnitude/point.m*normY;
-    l1.vx += impulseMagnitude/l1.m*normX;
-    l1.vy += impulseMagnitude/l1.m*normY;
-    l2.vx += impulseMagnitude/l2.m*normX;
-    l2.vy += impulseMagnitude/l2.m*normY;
+    point.v.x -= impulseMagnitude/point.m*normX;
+    point.v.y -= impulseMagnitude/point.m*normY;
+    l1.v.x += impulseMagnitude/l1.m*normX;
+    l1.v.y += impulseMagnitude/l1.m*normY;
+    l2.v.x += impulseMagnitude/l2.m*normX;
+    l2.v.y += impulseMagnitude/l2.m*normY;
 }
+
+// void handleCircleToCircleCollision (Point &a, Point &b, const float &ELASTICITY) {
+//     Vector2D normal(a.x-b.x, a.y-b.y);
+//     normal.normalize();
+
+//     // initial velocities of each point on normal
+//     float vAN = normal.dot(a.v.x, a.v.y);
+//     float vBN = normal.dot(a.v.x, a.v.y);
+
+//     // initial momentum of system along normal
+//     float p0 = a.m*vAN + b.m*vBN;
+//     // initial kinetic energy of system along normal
+//     float k0 = a.m*vAN*vAN + b.m*vBN*vBN;
+
+//     // final velocities of each point on normal
+//     float vBNF = (2*p0*b.m + sqrt(pow(2*p0*b.m, 2) - 4*(b.m*b.m+a.m*b.m)*(p0*p0-2*k0*a.m)))/(2*(b.m*b.m+a.m*b.m));
+//     float vANF = (p0 - b.m*vBNF)/a.m;
+
+//     // final velocities of each point
+//     float vAF = ()
+// }

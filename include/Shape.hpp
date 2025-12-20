@@ -33,5 +33,6 @@ public:
     void handleCollisions (Shape &otherShape, const float &ELASTICITY);
     float pointToLineDistance (Point &lp1, Point &lp2, Point &point, const float &ELASTICITY);
     void resolveVelocities (Point &lp1, Point &lp2, Point &point, const float &ELASTICITY);
+    void handleCircleToCircleCollision (Point &a, Point &b, const float &ELASTICITY);
 
 };

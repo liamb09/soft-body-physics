@@ -1,12 +1,14 @@
 #pragma once
 #include <iostream>
 #include <SDL3/SDL.h>
+#include "Vector2D.hpp"
 
 using namespace std;
 
 struct Point {
 
-    float x, y, vx, vy;
+    float x, y;
+    Vector2D v;
     float m;
     bool fixed;
 

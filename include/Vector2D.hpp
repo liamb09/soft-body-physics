@@ -12,6 +12,7 @@ struct Vector2D {
     float magnitude ();
 
     float dot (Vector2D &v, bool normalizeFirst = false);
+    float dot (float ox, float oy);
 
     void normalize ();
 

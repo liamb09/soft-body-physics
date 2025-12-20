@@ -21,8 +21,8 @@ void Spring::update (const float &dt) {
     normDirX = ((*p2).x - (*p1).x)/dirLen;
     normDirY = ((*p2).y - (*p1).y)/dirLen;
 
-    vRelX = (*p2).vx - (*p1).vx;
-    vRelY = (*p2).vy - (*p1).vy;
+    vRelX = (*p2).v.x - (*p1).v.x;
+    vRelY = (*p2).v.y - (*p1).v.y;
 
     //  |----------SPRING FORCE-----------|  |------------------DAMPING FORCE------------------|
     (*p1).update(dt, 
