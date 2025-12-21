@@ -16,4 +16,9 @@ struct Vector2D {
 
     void normalize ();
 
+    friend Vector2D operator+(Vector2D lhs, Vector2D rhs);
+    friend Vector2D operator-(Vector2D lhs, Vector2D rhs);
+    friend Vector2D operator*(float lhs, Vector2D rhs);
+    friend ostream& operator<< (ostream& lhs, Vector2D rhs);
+
 };

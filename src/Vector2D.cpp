@@ -21,6 +21,21 @@ float Vector2D::dot (float ox, float oy) {
 }
 
 void Vector2D::normalize () {
-    x /= magnitude();
-    y /= magnitude();
+    float mag = magnitude();
+    x /= mag;
+    y /= mag;
+}
+
+Vector2D operator+(Vector2D lhs, Vector2D rhs) {
+    return Vector2D(lhs.x+rhs.x, lhs.y+rhs.y);
+}
+Vector2D operator-(Vector2D lhs, Vector2D rhs) {
+    return Vector2D(lhs.x-rhs.x, lhs.y-rhs.y);
+}
+Vector2D operator*(float lhs, Vector2D rhs) {
+    return Vector2D(lhs*rhs.x, lhs*rhs.y);
+}
+ostream& operator<<(ostream& lhs, Vector2D rhs) {
+    lhs << "(" << rhs.x << ", " << rhs.y << ")";
+    return lhs;
 }

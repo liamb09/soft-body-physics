@@ -5,14 +5,8 @@
 
 using namespace std;
 
-Point::Point (float x, float y, const float &m, const bool fixed) : x(x), y(y), v(0,0), m(m), fixed(fixed) {
-    // v.x = 0;
-    // v.y = 0;
-}
-Point::Point (float x, float y, float vx, float vy, const float &m, const bool fixed) : x(x), y(y), v(vx, vy), m(m), fixed(fixed) {
-    // v.x = vx;
-    // v.y = vy;
-}
+Point::Point (float x, float y, const float &m, const bool fixed) : x(x), y(y), v(0,0), m(m), fixed(fixed) {}
+Point::Point (float x, float y, float vx, float vy, const float &m, const bool fixed) : x(x), y(y), v(vx, vy), m(m), fixed(fixed) {}
 
 void Point::update (const float &dt, const float xForce, const float yForce, const float gravity) {
     // cout << x << " " << y << "\n";

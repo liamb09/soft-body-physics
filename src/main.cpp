@@ -17,6 +17,7 @@
 #include "../include/Spring.hpp"
 #include "../include/Shape.hpp"
 #include "../include/SoftBodyPhysics2D.hpp"
+#include "../include/Vector2D.hpp"
 
 using namespace std;
 
@@ -52,7 +53,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Initialize simulation
-    SoftBodyPhysics2D engine(0, 1);
+    SoftBodyPhysics2D engine(-100, 1);
 
     // // rectangle ground
     // engine.addShape(vector<Point>{
@@ -149,15 +150,28 @@ int main(int argc, char* argv[]) {
 
     // engine.addGridShape(150, 50, 150, 100, 4, 6);
 
-    Point p(250, 300);
-    p.v.x = 100;
+    // Point p(250, 300, 100, 0, 5, false);
+    // engine.addShape(vector<Point>{
+    //     Point(200, 300),
+    //     Point(225, 275),
+    //     p,
+    //     Point(225, 325)
+    // });
+
+    engine.addRect(375, 100, 50, 50);
     engine.addShape(vector<Point>{
-        Point(200, 300),
-        Point(225, 275),
-        p,
-        Point(225, 325)
-    });
-    engine.addRect(400, 200, 200, 200);
+        Point(100, 450),
+        Point(700, 500),
+        Point(700, 550),
+        Point(100, 550)
+    }, true);
+    engine.addShape(vector<Point>{
+        Point(400, 200),
+        Point(600, 200),
+        Point(600, 440),
+        Point(410, 440)
+    }, true);
+    // engine.addRect(400, 200, 200, 240, 5, true);
 
     Uint64 startTime;
     float dt;
